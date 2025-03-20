@@ -1,0 +1,15 @@
+Questo è un file di testo con cose casuali.
+Ecco alcune parole random:
+albero, sole, acqua, montagna, libro, computer, musica, strada, giardino, caffè.
+
+Numeri casuali: 42, 7, 15, 23, 99, 3, 56, 128, 0, 512.
+
+Una breve frase senza senso: I gatti verdi ballano sotto la luna blu mentre le farfalle cantano canzoni matematiche.
+
+Elenco casuale:
+- Primo elemento
+- Secondo elemento
+- Terzo elemento
+- Quarto elemento
+
+Fine del testo casuale.

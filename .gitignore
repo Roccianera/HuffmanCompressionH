@@ -1,0 +1,42 @@
+# Compilazione e build
+*.o
+*.obj
+*.so
+*.dll
+*.dylib
+*.a
+*.lib
+*.exe
+*.out
+*.app
+
+# Cartelle di build
+/build/
+/bin/
+/Debug/
+/Release/
+/CMakeFiles/
+/CMakeCache.txt
+
+# File di log e temporanei
+*.log
+*.tmp
+*.swp
+*.swo
+
+# Editor e IDE
+.vscode/
+.idea/
+*.code-workspace
+
+# Makefile generati
+Makefile
+CMakeLists.txt.user
+compile_commands.json
+
+# File specifici per Windows
+Thumbs.db
+Desktop.ini
+
+# File specifici per MacOS
+.DS_Store
