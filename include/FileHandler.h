@@ -23,9 +23,11 @@ public:
     void deCompress(std::string &inputFileName, std::string &outputFileName);
 
 
-    void serializeTree(std::string&outputFileName);
-    void deSerializeTree(std::string&inputFileName);
+    void serializeTree(std::ofstream&file);
+    void deSerializeTree(std::ifstream& file );
     std::unordered_map<char,uint32_t> getFrequencies() const;
+
+    void printStatics(std::string &inputFileName, std::string &outputFileName);
 
     
 

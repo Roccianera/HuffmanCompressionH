@@ -5,7 +5,7 @@
 int main()
 {
 
-
+/*
     FileHandler fileHandler;
     
     fileHandler.calcolatefrequencies("test/cose.txt");
@@ -23,17 +23,26 @@ int main()
     }  
 
     
-    
-   // huffmanTree.printTree();
+    // huffmanTree.printTree();
     huffmanTree.generateHuffmanCodes();
-
+    
     auto codes =huffmanTree.getHuffmanCodes();
-
+    
     // Display the Huffman codes
     std::cout << "\nHuffman codes:" << std::endl;
     for (const auto& pair : codes) {
         std::cout << "'" << pair.first << "': " << pair.second << std::endl;
     }
+    */
+
+    FileHandler fileHandler;
+
+    std::string inputFileName{"test/cose.txt"};
+    std::string outputFileName{"test/cose.huffman"};
+
+
+
+    fileHandler.compress(inputFileName,outputFileName);
 
     
     return 0;
