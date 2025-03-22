@@ -1,15 +1,39 @@
 cmake_minimum_required(VERSION 3.10)
-project(project-name)
+project(HuffmanCompression)
 
+# Set C++ standard
 set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-enable_testing()
+# Add source files
+set(SOURCES
+    src/main.cpp
+    src/FileHandler.cpp
+    src/HuffmanTree.cpp
+    src/HuffmanNode.cpp
+)
 
-add_subdirectory(googletest)
+# Add header files
+set(HEADERS
+    include/FileHandler.h
+    include/HuffmanTree.h
+    include/HuffmanNode.h
+)
 
-include_directories(${gtest_SOURCE_DIR}/include ${gtest_SOURCE_DIR})
+# Create executable
+add_executable(huffman ${SOURCES} ${HEADERS})
 
-add_executable(HuffmanTreeTest test/HuffmanTreeTest.cpp)
-target_link_libraries(HuffmanTreeTest gtest gtest_main)
+# Add include directories
+target_include_directories(huffman PRIVATE include)
 
-add_test(NAME HuffmanTreeTest COMMAND HuffmanTreeTest)
+# Enable warnings
+if(MSVC)
+    target_compile_options(huffman PRIVATE /W4)
+else()
+    target_compile_options(huffman PRIVATE -Wall -Wextra)
+endif()
+
+# Set output directories
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib) 
