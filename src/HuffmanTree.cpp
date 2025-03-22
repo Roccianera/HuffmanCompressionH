@@ -16,7 +16,7 @@ HuffmanNode *HuffmanTree::getRoot() const
     return this->root;
 }
 
-void HuffmanTree::buildTree(const std::unordered_map< unsigned char , uint32_t> &frequencies)
+void HuffmanTree::buildTree(const std::map<unsigned char, uint32_t> &frequencies)
 {
 
     std::priority_queue<HuffmanNode *, std::vector<HuffmanNode *>, HuffmanNode::CompareNodes> pq;
@@ -41,10 +41,9 @@ void HuffmanTree::buildTree(const std::unordered_map< unsigned char , uint32_t> 
     this->root = pq.top();
     pq.pop();
 
-   // printTree();
 }
 
-std::unordered_map< unsigned char , std::string> HuffmanTree::getHuffmanCodes() const
+std::map<unsigned char, std::string> HuffmanTree::getHuffmanCodes() const
 {
 
     return this->huffmanCodes;
@@ -67,33 +66,16 @@ void HuffmanTree::printTree(const std::string &prefix, const HuffmanNode *node, 
         return;
 
     std::cout << prefix;
-    std::cout << (isLeft ? "|--" : "\\--"); // Replace └── with \--
+    std::cout << (isLeft ? "|--" : "\\--");
 
     std::cout << "(" << (node->isLeaf() ? node->character : 'F') << ':' << node->frequency << ") " << std::endl;
 
-    // Also replace the Unicode characters in these lines
+   
     printTree(prefix + (isLeft ? "|   " : "    "), node->left, true);
     printTree(prefix + (isLeft ? "|   " : "    "), node->right, false);
 }
 
-void HuffmanTree::printTreeInternal(HuffmanNode *node)
-{
-    if (!node)
-        return;
 
-    if (node->isLeaf())
-    {
-
-        std::cout << "Leaf: '" << node->character << "' with frequency: " << node->frequency << std::endl;
-    }
-    else
-    {
-        std::cout << "Internal node with frequency: " << node->frequency << std::endl;
-    }
-
-    printTreeInternal(node->left);
-    printTreeInternal(node->right);
-}
 
 void HuffmanTree::generateHuffmanCodesInternal(HuffmanNode *node, const std::string &code)
 {

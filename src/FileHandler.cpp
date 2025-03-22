@@ -9,7 +9,6 @@ FileHandler::FileHandler()
 
 void FileHandler::calcolatefrequencies(const std::string &inputFileName)
 {
-    // TODO: insert return statement here
 
     this->frequencies.clear();
 
@@ -21,14 +20,14 @@ void FileHandler::calcolatefrequencies(const std::string &inputFileName)
         throw std::runtime_error("File not opened");
     }
 
-    unsigned char  car;
-    while (file.read(reinterpret_cast<char *>(&car), sizeof(car)))
+    unsigned char car;
+    while (file.read(reinterpret_cast<char *>(&car), 1))
     {
 
         frequencies[car]++;
     }
 
-    
+    file.close();
 }
 
 void FileHandler::compress(std::string &inputFileName, std::string &outputFileName)
@@ -42,7 +41,7 @@ void FileHandler::compress(std::string &inputFileName, std::string &outputFileNa
 
     tree.generateHuffmanCodes();
 
-    std::unordered_map< unsigned char , std::string> codes = tree.getHuffmanCodes();
+    std::map<unsigned char, std::string> codes = tree.getHuffmanCodes();
 
     std::ifstream iFile(inputFileName, std::ios::binary);
 
@@ -54,8 +53,6 @@ void FileHandler::compress(std::string &inputFileName, std::string &outputFileNa
     }
 
     serializeTree(oFile);
-
-
 
     char currentByte{0};
     int bitCount{0};
@@ -101,59 +98,54 @@ void FileHandler::compress(std::string &inputFileName, std::string &outputFileNa
 void FileHandler::deCompress(std::string &inputFileName, std::string &outputFileName)
 {
     this->frequencies.clear();
-    std::cerr << "Starting decompression from " << inputFileName << " to " << outputFileName << std::endl;
 
     std::ifstream iFile(inputFileName, std::ios::binary);
     std::ofstream oFile(outputFileName, std::ios::binary);
-    
+
     if (!oFile.is_open() || !iFile.is_open())
     {
         std::cerr << "Error: Failed to open files for decompression" << std::endl;
         throw std::runtime_error("File not opened");
     }
 
-     std::cerr << "Deserializing frequency tree..." << std::endl;
     deSerializeTree(iFile);
-    
-    if (frequencies.empty()) {
+
+    if (frequencies.empty())
+    {
         std::cerr << "Error: Frequency map is empty after deserialization" << std::endl;
         throw std::runtime_error("Invalid frequency data");
     }
 
     HuffmanTree tree{};
-    std::cerr << "Building Huffman tree..." << std::endl;
+
+
     tree.buildTree(this->frequencies);
 
-    std::cerr << "Generating Huffman codes..." << std::endl;
     tree.generateHuffmanCodes();
- 
+
+    auto codes = tree.getHuffmanCodes();
+
+
     iFile.seekg(0, std::ios::end);
     long fileSize = iFile.tellg();
-    std::cerr << "Input file size: " << fileSize << " bytes" << std::endl;
 
     iFile.seekg(-1, std::ios::end);
     uint8_t paddingBits;
     iFile.read(reinterpret_cast<char *>(&paddingBits), sizeof(uint8_t));
-    std::cerr << "Padding bits: " << static_cast<int>(paddingBits) << std::endl;
 
-    long dataStart = sizeof(size_t) + frequencies.size() * (sizeof(uint32_t) + sizeof(char));
-    std::cerr << "Data starts at byte: " << dataStart << std::endl;
+    long dataStart = sizeof(uint16_t) + frequencies.size() * (sizeof(uint32_t) + sizeof(unsigned char));
 
     iFile.seekg(dataStart, std::ios::beg);
 
     HuffmanNode *root = tree.getRoot();
-    if (!root) {
-        std::cerr << "Error: Huffman tree root is null" << std::endl;
-        throw std::runtime_error("Invalid Huffman tree");
-    }
 
     auto current = root;
     long byteProcessed = 0;
-    char byte = 0;
+    unsigned char byte = 0;
     long compressedDataSize = fileSize - dataStart - 1;
     std::cerr << "Compressed data size: " << compressedDataSize << " bytes" << std::endl;
 
-    while (iFile.read(&byte, 1))
+    while (iFile.read(reinterpret_cast<char *>(&byte), 1))
     {
         byteProcessed++;
         int bitsToProcess = 8;
@@ -169,81 +161,66 @@ void FileHandler::deCompress(std::string &inputFileName, std::string &outputFile
             bool bit = (byte & (1 << (7 - i))) != 0;
             if (bit)
             {
-                if (!current->right) {
-                    std::cerr << "Error: Null right child in Huffman tree" << std::endl;
-                    throw std::runtime_error("Corrupted Huffman tree");
-                }
+
                 current = current->right;
             }
             else
             {
-                if (!current->left) {
-                    std::cerr << "Error: Null left child in Huffman tree" << std::endl;
-                    throw std::runtime_error("Corrupted Huffman tree");
-                }
+
                 current = current->left;
             }
 
             if (current->isLeaf())
             {
-                oFile.write(reinterpret_cast<char *>(&current->character), sizeof(current->character));
+                oFile.write(reinterpret_cast<char *>(&current->character), 1);
                 current = root;
             }
         }
     }
 
-    std::cerr << "Decompression complete. Processed " << byteProcessed << " bytes." << std::endl;
     iFile.close();
     oFile.close();
 
     std::cerr << "Printing statistics..." << std::endl;
-    
-   // printStatics(inputFileName, outputFileName);
+    printStatics(inputFileName, outputFileName);
 }
 
 void FileHandler::serializeTree(std::ofstream &file)
 {
-    
-    size_t mapSize{frequencies.size()};
+
+    uint16_t mapSize{frequencies.size()};
 
     file.write(reinterpret_cast<char *>(&mapSize), sizeof(mapSize));
 
     for (const auto &[charcater, freq] : this->frequencies)
     {
-        char charCopy = charcater;
+        unsigned char charCopy = charcater;
         uint32_t freqCopy = freq;
-        
-      
 
-        file.write(reinterpret_cast<char *>(&charCopy), sizeof(char));
+        file.write(reinterpret_cast<char *>(&charCopy), sizeof(charcater));
         file.write(reinterpret_cast<char *>(&freqCopy), sizeof(uint32_t));
     }
-
- 
 }
 
 void FileHandler::deSerializeTree(std::ifstream &file)
 {
-    
-    size_t mapSize;
+
+    uint16_t mapSize;
     file.read(reinterpret_cast<char *>(&mapSize), sizeof(mapSize));
 
     for (size_t i = 0; i < mapSize; i++)
     {
-        char character;
+        unsigned char character;
         uint32_t frequency;
 
-        file.read(reinterpret_cast<char *>(&character), sizeof(char));
+        file.read(reinterpret_cast<char *>(&character), sizeof(character));
         file.read(reinterpret_cast<char *>(&frequency), sizeof(uint32_t));
 
         this->frequencies[character] = frequency;
-       
     }
-
-    
 }
 
-std::unordered_map<unsigned char, uint32_t> FileHandler::getFrequencies() const
+std::map<unsigned char, uint32_t> FileHandler::getFrequencies() const
 {
     return this->frequencies;
 }
