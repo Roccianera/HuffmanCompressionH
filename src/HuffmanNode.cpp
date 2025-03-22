@@ -1,6 +1,6 @@
 #include "HuffmanNode.h"
 
-HuffmanNode::HuffmanNode(char characther, uint32_t frequency)
+HuffmanNode::HuffmanNode( unsigned char  characther, uint32_t frequency)
     : character(characther), frequency(frequency), left(nullptr), right(nullptr)
 {
 }

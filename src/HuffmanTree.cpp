@@ -2,10 +2,8 @@
 #include <queue>
 #include <iostream>
 
-HuffmanTree::HuffmanTree():root(nullptr)
+HuffmanTree::HuffmanTree() : root(nullptr)
 {
-
-   
 }
 
 HuffmanTree::~HuffmanTree()
@@ -13,7 +11,12 @@ HuffmanTree::~HuffmanTree()
     delete this->root;
 }
 
-void HuffmanTree::buildTree(const std::unordered_map<char, uint32_t> &frequencies)
+HuffmanNode *HuffmanTree::getRoot() const
+{
+    return this->root;
+}
+
+void HuffmanTree::buildTree(const std::unordered_map< unsigned char , uint32_t> &frequencies)
 {
 
     std::priority_queue<HuffmanNode *, std::vector<HuffmanNode *>, HuffmanNode::CompareNodes> pq;
@@ -37,9 +40,11 @@ void HuffmanTree::buildTree(const std::unordered_map<char, uint32_t> &frequencie
 
     this->root = pq.top();
     pq.pop();
+
+   // printTree();
 }
 
-std::unordered_map<char, std::string> HuffmanTree::getHuffmanCodes() const
+std::unordered_map< unsigned char , std::string> HuffmanTree::getHuffmanCodes() const
 {
 
     return this->huffmanCodes;
@@ -47,13 +52,28 @@ std::unordered_map<char, std::string> HuffmanTree::getHuffmanCodes() const
 
 void HuffmanTree::generateHuffmanCodes()
 {
-    generateHuffmanCodesInternal(this->root,"");
+    generateHuffmanCodesInternal(this->root, "");
 }
 
 void HuffmanTree::printTree()
 {
 
-    printTreeInternal(this->root);
+    printTree("", root, false);
+}
+
+void HuffmanTree::printTree(const std::string &prefix, const HuffmanNode *node, bool isLeft)
+{
+    if (!node)
+        return;
+
+    std::cout << prefix;
+    std::cout << (isLeft ? "|--" : "\\--"); // Replace └── with \--
+
+    std::cout << "(" << (node->isLeaf() ? node->character : 'F') << ':' << node->frequency << ") " << std::endl;
+
+    // Also replace the Unicode characters in these lines
+    printTree(prefix + (isLeft ? "|   " : "    "), node->left, true);
+    printTree(prefix + (isLeft ? "|   " : "    "), node->right, false);
 }
 
 void HuffmanTree::printTreeInternal(HuffmanNode *node)
@@ -76,15 +96,16 @@ void HuffmanTree::printTreeInternal(HuffmanNode *node)
 }
 
 void HuffmanTree::generateHuffmanCodesInternal(HuffmanNode *node, const std::string &code)
-{   
-    if (!node) return ;
+{
+    if (!node)
+        return;
 
-    if (node->isLeaf()){
-        this->huffmanCodes[node->character] = code.empty()?"0":code;
-        return ;
+    if (node->isLeaf())
+    {
+        this->huffmanCodes[node->character] = code.empty() ? "0" : code;
+        return;
     }
 
     generateHuffmanCodesInternal(node->left, code + "0");
     generateHuffmanCodesInternal(node->right, code + "1");
-    
 }

@@ -8,13 +8,13 @@
 class HuffmanNode
 {
 public:
-    char character;
+    unsigned char  character;
     uint32_t frequency;
 
     HuffmanNode *left;
     HuffmanNode *right;
 
-    HuffmanNode(char characther, uint32_t frequency );
+    HuffmanNode(unsigned char  characther, uint32_t frequency );
     HuffmanNode(uint32_t frequency ,HuffmanNode *left, HuffmanNode* right );
     ~HuffmanNode();
     bool isLeaf() const;

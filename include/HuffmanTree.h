@@ -12,16 +12,17 @@ class HuffmanTree
 private:
 
     HuffmanNode * root;
-    std::unordered_map<char,std::string>huffmanCodes;
+    std::unordered_map< unsigned char ,std::string>huffmanCodes;
 
 public:
     HuffmanTree();
     ~HuffmanTree();
     HuffmanNode * getRoot()const;
-    void buildTree(const std::unordered_map<char,uint32_t> &frequencies);
-    std::unordered_map<char ,std::string> getHuffmanCodes() const ;
+    void buildTree(const std::unordered_map< unsigned char  ,uint32_t> &frequencies);
+    std::unordered_map< unsigned char ,std::string> getHuffmanCodes() const ;
     void generateHuffmanCodes();
     void printTree();
+    void printTree(const std::string & prefix, const HuffmanNode* node ,bool isLeft);
 
 
 private:

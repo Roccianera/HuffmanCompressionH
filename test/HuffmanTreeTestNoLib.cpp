@@ -34,15 +34,28 @@ int main()
         std::cout << "'" << pair.first << "': " << pair.second << std::endl;
     }
     */
-
     FileHandler fileHandler;
-
+    
+    
     std::string inputFileName{"test/cose.txt"};
     std::string outputFileName{"test/cose.huffman"};
-
-
-
+    
+    
+    
     fileHandler.compress(inputFileName,outputFileName);
+    
+    
+
+
+
+
+    FileHandler fileHandler2;
+    std::string inputFileName2{"test/cose.huffman"};
+    std::string outputFileName2{"test/coseCopy.txt"};
+
+
+
+    fileHandler2.deCompress(inputFileName2,outputFileName2);
 
     
     return 0;
