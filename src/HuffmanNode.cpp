@@ -5,16 +5,11 @@ HuffmanNode::HuffmanNode( unsigned char  characther, uint32_t frequency)
 {
 }
 
-HuffmanNode::HuffmanNode(uint32_t frequency,HuffmanNode *left, HuffmanNode *right):
+HuffmanNode::HuffmanNode(uint32_t frequency,std::shared_ptr<HuffmanNode> left, std::shared_ptr<HuffmanNode> right):
     character('\0'),frequency(frequency),left(left),right(right)    
 {
 }
 
-HuffmanNode::~HuffmanNode()
-{
-    delete left;
-    delete right;
-}
 
 bool HuffmanNode::isLeaf() const
 {

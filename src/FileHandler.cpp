@@ -117,58 +117,56 @@ void FileHandler::deCompress(std::string &inputFileName, std::string &outputFile
     }
 
     HuffmanTree tree{};
-
-
     tree.buildTree(this->frequencies);
-
     tree.generateHuffmanCodes();
-
     auto codes = tree.getHuffmanCodes();
-
 
     iFile.seekg(0, std::ios::end);
     long fileSize = iFile.tellg();
-
     iFile.seekg(-1, std::ios::end);
     uint8_t paddingBits;
     iFile.read(reinterpret_cast<char *>(&paddingBits), sizeof(uint8_t));
 
     long dataStart = sizeof(uint16_t) + frequencies.size() * (sizeof(uint32_t) + sizeof(unsigned char));
-
     iFile.seekg(dataStart, std::ios::beg);
 
-    HuffmanNode *root = tree.getRoot();
-
+    std::shared_ptr<HuffmanNode> root = tree.getRoot();
     auto current = root;
     long byteProcessed = 0;
     unsigned char byte = 0;
     long compressedDataSize = fileSize - dataStart - 1;
     std::cerr << "Compressed data size: " << compressedDataSize << " bytes" << std::endl;
 
-    while (iFile.read(reinterpret_cast<char *>(&byte), 1))
+// potrei mettere dei palletti per poter permettere di lavorare in parallelo 
+
+    for (long i = 0; i < compressedDataSize - 1; i++)
     {
+        iFile.read(reinterpret_cast<char *>(&byte), 1);
         byteProcessed++;
-        int bitsToProcess = 8;
 
-        if (byteProcessed == compressedDataSize)
-        {
-            bitsToProcess = 8 - paddingBits;
-            std::cerr << "Processing final byte with " << bitsToProcess << " bits" << std::endl;
-        }
-
-        for (size_t i = 0; i < bitsToProcess; i++)
+        for (int i = 0; i < 8; i++)
         {
             bool bit = (byte & (1 << (7 - i))) != 0;
-            if (bit)
-            {
+            current = bit ? current->right : current->left;
 
-                current = current->right;
-            }
-            else
+            if (current->isLeaf())
             {
-
-                current = current->left;
+                oFile.write(reinterpret_cast<char *>(&current->character), 1);
+                current = root;
             }
+        }
+    }
+
+    // Process the last byte with padding
+    if (compressedDataSize > 0)
+    {
+        iFile.read(reinterpret_cast<char *>(&byte), 1);
+        std::cerr << "Processing final byte with " << (8 - paddingBits) << " bits" << std::endl;
+
+        for (int i = 0; i < (8 - paddingBits); i++)
+        {
+            bool bit = (byte & (1 << (7 - i))) != 0;
+            current = bit ? current->right : current->left;
 
             if (current->isLeaf())
             {
