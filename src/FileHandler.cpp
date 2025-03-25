@@ -20,7 +20,7 @@ void FileHandler::calcolatefrequencies(const std::string &inputFileName)
         throw std::runtime_error("File not opened");
     }
 
-    unsigned char car;
+    char car;
     while (file.read(reinterpret_cast<char *>(&car), 1))
     {
 
@@ -34,15 +34,6 @@ void FileHandler::compress(std::string &inputFileName, std::string &outputFileNa
 {
 
     this->calcolatefrequencies(inputFileName);
-
-    HuffmanTree tree{};
-
-    tree.buildTree(this->frequencies);
-
-    tree.generateHuffmanCodes();
-
-    std::map<unsigned char, std::string> codes = tree.getHuffmanCodes();
-
     std::ifstream iFile(inputFileName, std::ios::binary);
 
     std::ofstream oFile(outputFileName, std::ios::binary);
@@ -51,6 +42,20 @@ void FileHandler::compress(std::string &inputFileName, std::string &outputFileNa
         std::cerr << "file not opened" << std::endl;
         throw std::runtime_error("oFile not opened");
     }
+    if (frequencies.size() == 0)
+    {
+        oFile.close();
+        iFile.close();
+        return;
+    }
+
+    HuffmanTree tree{};
+
+    tree.buildTree(this->frequencies);
+
+    tree.generateHuffmanCodes();
+
+    std::map<char, std::string> codes = tree.getHuffmanCodes();
 
     serializeTree(oFile);
 
@@ -71,7 +76,7 @@ void FileHandler::compress(std::string &inputFileName, std::string &outputFileNa
 
             if (bitCount == 8)
             {
-                oFile.write(&currentByte, 1);
+                oFile.write(reinterpret_cast<char *>(&currentByte), sizeof(currentByte));
                 currentByte = 0;
                 bitCount = 0;
             }
@@ -82,7 +87,7 @@ void FileHandler::compress(std::string &inputFileName, std::string &outputFileNa
     {
 
         currentByte <<= (8 - bitCount);
-        oFile.write(&currentByte, 1);
+        oFile.write(reinterpret_cast<char *>(&currentByte), sizeof(currentByte));
     }
 
     uint8_t padding = 8 - bitCount;
@@ -91,8 +96,6 @@ void FileHandler::compress(std::string &inputFileName, std::string &outputFileNa
 
     iFile.close();
     oFile.close();
-
-    printStatics(inputFileName, outputFileName);
 }
 
 void FileHandler::deCompress(std::string &inputFileName, std::string &outputFileName)
@@ -112,8 +115,9 @@ void FileHandler::deCompress(std::string &inputFileName, std::string &outputFile
 
     if (frequencies.empty())
     {
-        std::cerr << "Error: Frequency map is empty after deserialization" << std::endl;
-        throw std::runtime_error("Invalid frequency data");
+        iFile.close();
+        oFile.close();
+        return;
     }
 
     HuffmanTree tree{};
@@ -127,17 +131,14 @@ void FileHandler::deCompress(std::string &inputFileName, std::string &outputFile
     uint8_t paddingBits;
     iFile.read(reinterpret_cast<char *>(&paddingBits), sizeof(uint8_t));
 
-    long dataStart = sizeof(uint16_t) + frequencies.size() * (sizeof(uint32_t) + sizeof(unsigned char));
+    long dataStart = sizeof(uint16_t) + frequencies.size() * (sizeof(uint32_t) + sizeof(char));
     iFile.seekg(dataStart, std::ios::beg);
 
     std::shared_ptr<HuffmanNode> root = tree.getRoot();
     auto current = root;
     long byteProcessed = 0;
-    unsigned char byte = 0;
+    char byte = 0;
     long compressedDataSize = fileSize - dataStart - 1;
-    std::cerr << "Compressed data size: " << compressedDataSize << " bytes" << std::endl;
-
-// potrei mettere dei palletti per poter permettere di lavorare in parallelo 
 
     for (long i = 0; i < compressedDataSize - 1; i++)
     {
@@ -158,7 +159,7 @@ void FileHandler::deCompress(std::string &inputFileName, std::string &outputFile
     }
 
     // Process the last byte with padding
-    if (compressedDataSize > 0)
+    if (compressedDataSize > 0 && paddingBits > 0)
     {
         iFile.read(reinterpret_cast<char *>(&byte), 1);
         std::cerr << "Processing final byte with " << (8 - paddingBits) << " bits" << std::endl;
@@ -180,7 +181,6 @@ void FileHandler::deCompress(std::string &inputFileName, std::string &outputFile
     oFile.close();
 
     std::cerr << "Printing statistics..." << std::endl;
-    printStatics(inputFileName, outputFileName);
 }
 
 void FileHandler::serializeTree(std::ofstream &file)
@@ -192,10 +192,10 @@ void FileHandler::serializeTree(std::ofstream &file)
 
     for (const auto &[charcater, freq] : this->frequencies)
     {
-        unsigned char charCopy = charcater;
+        char charCopy = charcater;
         uint32_t freqCopy = freq;
 
-        file.write(reinterpret_cast<char *>(&charCopy), sizeof(charcater));
+        file.write(reinterpret_cast<char *>(&charCopy), sizeof(charCopy));
         file.write(reinterpret_cast<char *>(&freqCopy), sizeof(uint32_t));
     }
 }
@@ -208,7 +208,7 @@ void FileHandler::deSerializeTree(std::ifstream &file)
 
     for (size_t i = 0; i < mapSize; i++)
     {
-        unsigned char character;
+        char character;
         uint32_t frequency;
 
         file.read(reinterpret_cast<char *>(&character), sizeof(character));
@@ -218,7 +218,7 @@ void FileHandler::deSerializeTree(std::ifstream &file)
     }
 }
 
-std::map<unsigned char, uint32_t> FileHandler::getFrequencies() const
+std::map<char, uint32_t> FileHandler::getFrequencies() const
 {
     return this->frequencies;
 }
@@ -247,4 +247,8 @@ void FileHandler::printStatics(std::string &inputFileName, std::string &outputFi
         std::cout << "Ratio of Compression : " << ratio << "% ("
                   << static_cast<double>(inputSize) / outputSize << ":1)\n";
     }
+}
+
+void FileHandler::writeBits(std::ifstream &iFile, std::ofstream &oFile)
+{
 }

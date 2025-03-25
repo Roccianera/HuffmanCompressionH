@@ -10,13 +10,13 @@ class HuffmanTree
 {
 private:
     std::shared_ptr<HuffmanNode> root;
-    std::map<unsigned char, std::string> huffmanCodes;
+    std::map<char, std::string> huffmanCodes;
 
 public:
     HuffmanTree();
     std::shared_ptr<HuffmanNode> getRoot() const;
-    void buildTree(const std::map<unsigned char, uint32_t> &frequencies);
-    std::map<unsigned char, std::string> getHuffmanCodes() const;
+    void buildTree(const std::map<char, uint32_t> &frequencies);
+    std::map<char, std::string> getHuffmanCodes() const;
     void generateHuffmanCodes();
     void printTree();
     void printTree(const std::string &prefix, const std::shared_ptr<HuffmanNode> node, bool isLeft);

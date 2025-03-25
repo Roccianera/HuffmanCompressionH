@@ -8,7 +8,7 @@
 class FileHandler
 {
 private:
-    std::map<unsigned char, uint32_t> frequencies;
+    std::map<char, uint32_t> frequencies;
     HuffmanTree tree;
 
 public:
@@ -21,9 +21,10 @@ public:
 
     void serializeTree(std::ofstream &file);
     void deSerializeTree(std::ifstream &file);
-    std::map<unsigned char, uint32_t> getFrequencies() const;
+    std::map<char, uint32_t> getFrequencies() const;
 
     void printStatics(std::string &inputFileName, std::string &outputFileName);
+    void writeBits(std::ifstream &iFile, std::ofstream &oFile);
 };
 
 #endif

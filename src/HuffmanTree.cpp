@@ -6,23 +6,33 @@ HuffmanTree::HuffmanTree() : root(nullptr)
 {
 }
 
-
-
 std::shared_ptr<HuffmanNode> HuffmanTree::getRoot() const
 {
     return this->root;
 }
 
-void HuffmanTree::buildTree(const std::map<unsigned char, uint32_t> &frequencies)
+void HuffmanTree::buildTree(const std::map<char, uint32_t> &frequencies)
 {
 
-    std::priority_queue<std::shared_ptr<HuffmanNode> , std::vector<std::shared_ptr<HuffmanNode> >, HuffmanNode::CompareNodes> pq;
+    std::priority_queue<std::shared_ptr<HuffmanNode>, std::vector<std::shared_ptr<HuffmanNode>>, HuffmanNode::CompareNodes> pq;
 
     for (const auto &pair : frequencies)
         pq.push(std::make_shared<HuffmanNode>(pair.first, pair.second));
 
     if (pq.size() == 0)
         return;
+
+    if (pq.size() == 1)
+    {
+
+        auto node = pq.top();
+        pq.pop();
+
+        std::shared_ptr<HuffmanNode> dummyNode{std::make_shared<HuffmanNode>(node->frequency, nullptr, node)};
+
+        this->root = dummyNode;
+        return;
+    }
 
     while (pq.size() > 1)
     {
@@ -37,10 +47,9 @@ void HuffmanTree::buildTree(const std::map<unsigned char, uint32_t> &frequencies
 
     this->root = pq.top();
     pq.pop();
-
 }
 
-std::map<unsigned char, std::string> HuffmanTree::getHuffmanCodes() const
+std::map<char, std::string> HuffmanTree::getHuffmanCodes() const
 {
 
     return this->huffmanCodes;
@@ -67,12 +76,9 @@ void HuffmanTree::printTree(const std::string &prefix, std::shared_ptr<HuffmanNo
 
     std::cout << "(" << (node->isLeaf() ? node->character : 'F') << ':' << node->frequency << ") " << std::endl;
 
-   
     printTree(prefix + (isLeft ? "|   " : "    "), node->left, true);
     printTree(prefix + (isLeft ? "|   " : "    "), node->right, false);
 }
-
-
 
 void HuffmanTree::generateHuffmanCodesInternal(std::shared_ptr<HuffmanNode> node, const std::string &code)
 {
