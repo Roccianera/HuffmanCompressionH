@@ -10,6 +10,7 @@ FileHandler::FileHandler()
 void FileHandler::calcolatefrequencies(const std::string &inputFileName)
 {
 
+    
     this->frequencies.clear();
 
     std::ifstream file(inputFileName, std::ios::binary);
@@ -83,14 +84,20 @@ void FileHandler::compress(std::string &inputFileName, std::string &outputFileNa
         }
     }
 
+    std::cerr<<"Writing remaining bits..."<<std::endl;
+    std::cerr<<"Bit count: "<<bitCount<<std::endl;
+
+    uint8_t padding{0};
+
     if (bitCount != 0)
     {
 
         currentByte <<= (8 - bitCount);
+        padding = 8 - bitCount;
         oFile.write(reinterpret_cast<char *>(&currentByte), sizeof(currentByte));
     }
 
-    uint8_t padding = 8 - bitCount;
+
 
     oFile.write(reinterpret_cast<char *>(&padding), sizeof(uint8_t));
 
@@ -159,12 +166,12 @@ void FileHandler::deCompress(std::string &inputFileName, std::string &outputFile
     }
 
     // Process the last byte with padding
-    if (compressedDataSize > 0 && paddingBits > 0)
+    if (compressedDataSize > 0)
     {
         iFile.read(reinterpret_cast<char *>(&byte), 1);
-        std::cerr << "Processing final byte with " << (8 - paddingBits) << " bits" << std::endl;
-
-        for (int i = 0; i < (8 - paddingBits); i++)
+        int validBits = 8 - paddingBits;  // Calculate the number of valid bits
+        
+        for (int i = 0; i < validBits; i++)
         {
             bool bit = (byte & (1 << (7 - i))) != 0;
             current = bit ? current->right : current->left;
