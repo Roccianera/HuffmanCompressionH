@@ -459,15 +459,13 @@ TEST(SerializationTests, TreeSerialization)
     std::map<char, uint32_t> originalFrequencies = {
         {'a', 10}, {'b', 20}, {'c', 30}, {'d', 40}, {'e', 50}, {'f', 60}};
 
-    // Crea un FileHandler e imposta le frequenze
     FileHandler handler;
 
     // Dobbiamo modificare leggermente l'implementazione per questo test
     // Creiamo un metodo per impostare le frequenze direttamente
     std::ofstream file(testFileName, std::ios::binary);
 
-    // Serializziamo manualmente le frequenze
-    uint16_t mapSize = originalFrequencies.size();
+    std::size_t mapSize = originalFrequencies.size();
     file.write(reinterpret_cast<char *>(&mapSize), sizeof(mapSize));
 
     for (const auto &[character, freq] : originalFrequencies)
@@ -481,15 +479,12 @@ TEST(SerializationTests, TreeSerialization)
 
     file.close();
 
-    // Ora deserializziamo
     std::ifstream inFile(testFileName, std::ios::binary);
     handler.deSerializeTree(inFile);
     inFile.close();
 
-    // Ottieni le frequenze caricate
     auto loadedFrequencies = handler.getFrequencies();
 
-    // Verifica che le frequenze siano state mantenute correttamente
     EXPECT_EQ(originalFrequencies.size(), loadedFrequencies.size());
 
     for (const auto &[character, freq] : originalFrequencies)
@@ -497,7 +492,6 @@ TEST(SerializationTests, TreeSerialization)
         EXPECT_EQ(loadedFrequencies[character], freq);
     }
 
-    // Pulizia
     remove(testFileName.c_str());
 }
 

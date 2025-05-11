@@ -138,7 +138,7 @@ void FileHandler::deCompress(std::string &inputFileName, std::string &outputFile
     uint8_t paddingBits;
     iFile.read(reinterpret_cast<char *>(&paddingBits), sizeof(uint8_t));
 
-    long dataStart = sizeof(uint16_t) + frequencies.size() * (sizeof(uint32_t) + sizeof(char));
+    long dataStart = sizeof(std::size_t) + frequencies.size() * (sizeof(uint32_t) + sizeof(char));
     iFile.seekg(dataStart, std::ios::beg);
 
     std::shared_ptr<HuffmanNode> root = tree.getRoot();
@@ -193,7 +193,7 @@ void FileHandler::deCompress(std::string &inputFileName, std::string &outputFile
 void FileHandler::serializeTree(std::ofstream &file)
 {
 
-    uint16_t mapSize{frequencies.size()};
+    std::size_t  mapSize{frequencies.size()};
 
     file.write(reinterpret_cast<char *>(&mapSize), sizeof(mapSize));
 
@@ -210,8 +210,13 @@ void FileHandler::serializeTree(std::ofstream &file)
 void FileHandler::deSerializeTree(std::ifstream &file)
 {
 
-    uint16_t mapSize;
+    std::size_t mapSize;
     file.read(reinterpret_cast<char *>(&mapSize), sizeof(mapSize));
+
+
+
+
+    
 
     for (size_t i = 0; i < mapSize; i++)
     {
@@ -220,6 +225,7 @@ void FileHandler::deSerializeTree(std::ifstream &file)
 
         file.read(reinterpret_cast<char *>(&character), sizeof(character));
         file.read(reinterpret_cast<char *>(&frequency), sizeof(uint32_t));
+
 
         this->frequencies[character] = frequency;
     }
